@@ -1,0 +1,8 @@
+{
+    "degiro_int_account": 0,
+    "degiro_username": "",
+    "degiro_password": "",
+
+    "ghostfolio_auth_token": "",
+    "ghostfolio_api_host": "http://127.0.0.1:3333"
+}
