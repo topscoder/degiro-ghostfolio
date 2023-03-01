@@ -1,1 +1,4 @@
 degiro-connector
+yfinance
+lolpython
+art

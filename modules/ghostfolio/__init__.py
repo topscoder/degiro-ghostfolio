@@ -1,40 +1,37 @@
 import requests
 import json
+import logging
+from config import AppConfig
+from asciistuff import Lolcat
 
-def get_bearer_token(api_host="http://localhost:3333", security_token=""):
+
+def get_bearer_token():
     """
-    You can get the Bearer Token via GET http://localhost:3333/api/v1/auth/anonymous/<INSERT_SECURITY_TOKEN_OF_ACCOUNT> 
-    or curl -s http://localhost:3333/api/v1/auth/anonymous/<INSERT_SECURITY_TOKEN_OF_ACCOUNT>.
+    Getting the bearer token from local Ghostfolio instance.
     """
+    appConfig = AppConfig()
+    config_dict = appConfig.get()
+    api_host = config_dict.get('ghostfolio_api_host')
+    security_token = config_dict.get('ghostfolio_auth_token')
     x = requests.get(f"{api_host}/api/v1/auth/anonymous/{security_token}")
     return json.loads(x.content)['authToken']
 
 
-def import_activity(bearer_token, accountId, currency, dataSource, date, fee, quantity, symbol, type, unitPrice):
+def import_activity(accountId, currency, dataSource, date, fee, quantity, symbol, type, unitPrice):
     """Post transaction to Ghostfolio API
 
     Args:
-        bearer_token (string): _description_
-        accountId (_type_): _description_
-        currency (_type_): _description_
-        dataSource (_type_): _description_
-        date (_type_): _description_
-        fee (_type_): _description_
-        quantity (_type_): _description_
-        symbol (_type_): _description_
-        type (_type_): _description_
-        unitPrice (_type_): _description_
+        accountId (string): Id of the account in Ghostfolio
+        currency (string): CHF | EUR | USD etc.
+        dataSource (string): MANUAL (for type ITEM) | YAHOO
+        date (ISO 8601 format): 2022-09-27 18:00:00.000
+        fee (double): Fee of the activity
+        quantity (double): Quantity of the activity
+        symbol (string): Symbol of the activity (suitable for dataSource) (@FIXME ISIN POSSIBLE?)
+        type (string): BUY | DIVIDEND | ITEM | SELL
+        unitPrice (double): Price per unit of the activity
 
-        accountId	string (optional)	Id of the account
-        currency	string	CHF | EUR | USD etc.
-        dataSource	string	MANUAL (for type ITEM) | YAHOO
-        date	string	Date in the format ISO-8601
-        fee	number	Fee of the activity
-        quantity	number	Quantity of the activity
-        symbol	string	Symbol of the activity (suitable for dataSource)
-        type	string	BUY | DIVIDEND | ITEM | SELL
-        unitPrice	number	Price per unit of the activity
-
+        
         POST http://localhost:3333/api/v1/import
 
         Body
@@ -53,17 +50,34 @@ def import_activity(bearer_token, accountId, currency, dataSource, date, fee, qu
             ]
         }
     """
-    activity = {
-        "currency": "USD",
-        "dataSource": "YAHOO",
-        "date": "2021-09-15T00:00:00:00.000Z",
-        "fee": 19,
-        "quantity": 3,
-        "symbol": "T",
-        "type": "BUY",
-        "unitPrice": 13.37
+
+    postdata = {
+        "activities": [
+            {
+                "accountId": accountId,
+                "currency": currency,
+                "dataSource": dataSource,
+                "date": date,
+                "fee": fee,
+                "quantity": quantity,
+                "symbol": symbol,
+                "type": type,
+                "unitPrice": unitPrice
+            }
+        ]
     }
 
-    url = f"http://192.168.1.49:3333/api/v1/import"
-    x = requests.post(url, json = {"activities": [activity]}, headers = {"Authorization": f"Bearer {bearer_token}"})
-    print(x)
+    logging.info(f"[{date}] [{type}] [{symbol}] [{quantity}]")
+
+    appConfig = AppConfig()
+    bearer_token = get_bearer_token()
+    config_dict = appConfig.get()
+    api_host = config_dict.get('ghostfolio_api_host')
+    url = f"{api_host}/api/v1/import"
+    x = requests.post(url, json = postdata, headers = {"Authorization": f"Bearer {bearer_token}"})
+
+    if x.status_code == 201:
+        logging.info(Lolcat("[HTTP] [201] Created"))
+
+    else:
+        logging.info(Lolcat(f"[HTTP] [{x.status_code}] {json.loads(x.content)['message']}"))
