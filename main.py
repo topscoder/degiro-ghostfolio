@@ -109,7 +109,7 @@ for transaction in transactions_history.values:
         dataSource="YAHOO", 
         date=defdate,  # Format: '2023-01-16T08:17:10+01:00'
         fee=trans['totalFeesInBaseCurrency'], 
-        quantity=trans['quantity'], 
+        quantity=abs(trans['quantity']), 
         symbol=tkr.ticker, 
         type=transtype, # BUY | DIVIDEND | ITEM | SELL @FIXME implement DIVIDEND
         unitPrice=trans['price']
