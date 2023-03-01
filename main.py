@@ -15,13 +15,17 @@ from degiro_connector.trading.models.trading_pb2 import (
     TransactionsHistory,
 )
 
+logging.basicConfig(level=logging.INFO)
+
+
+# Say hi! 👋
 message = text2art("DEGIRO >> GHOSTFOLIO")
 print("")
 print(Lolcat(message))
 print("")
 
-logging.basicConfig(level=logging.INFO)
 
+# Read configuration
 config_dict = AppConfig().get()
 int_account = config_dict.get("degiro_int_account")
 username = config_dict.get("degiro_username")
@@ -33,10 +37,16 @@ credentials = Credentials(
     password = password
 )
 
-trading_api = TradingAPI(credentials=credentials)
-trading_api.connect()
+degiro_trading_api = TradingAPI(credentials=credentials)
 
-# SETUP REQUEST
+try:
+    degiro_trading_api.connect()
+except:
+    print(f"💩 Shit, cannot login to degiro")
+    exit(1)
+
+
+# Setup date period
 today = datetime.date.today()
 from_date = TransactionsHistory.Request.Date(
     year=2020,
@@ -53,8 +63,9 @@ request = TransactionsHistory.Request(
     to_date=to_date,
 )
 
-# FETCH TRANSACTIONS
-transactions_history = trading_api.get_transactions_history(
+
+# Fetch degiro transactions
+transactions_history = degiro_trading_api.get_transactions_history(
     request=request,
     raw=False,
 )
@@ -74,7 +85,7 @@ for transaction in transactions_history.values:
     product_request = ProductsInfo.Request()
     product_request.products.extend([prodId])
 
-    products_info = trading_api.get_products_info(
+    products_info = degiro_trading_api.get_products_info(
         request=product_request,
         raw=True
     )
@@ -87,108 +98,19 @@ for transaction in transactions_history.values:
 
     product = products_info['data'][str(prodId)]
 
-    # Get ticker from Yahoo by ISIN
+    # Get ticker from Yahoo based on ISIN
     tkr = yf.Ticker(product['isin'])
     logging.info(f"[YAHOO] [GET_TICKER] ISIN {product['isin']} resolved to {tkr.ticker}")
 
-    accountId=config_dict.get('ghostfolio_account_id')
-    currency=product['currency']
-    dataSource="YAHOO" 
-    date=defdate  # Format: '2023-01-16T08:17:10+01:00'
-    fee=trans['totalFeesInBaseCurrency'] 
-    quantity=trans['quantity']
-    symbol=tkr.ticker
-    type=transtype  # BUY | DIVIDEND | ITEM | SELL @FIXME implement DIVIDEND
-    unitPrice=trans['price']
-
-    # {
-    #     'data': {
-    #         '25144135': {
-    #             'id': '25144135', 
-    #             'name': 'FLOW TRADERS', 
-    #             'isin': 'BMG3602E1084', 
-    #             'symbol': 'FLOW', 
-    #             'contractSize': 1.0, 
-    #             'productType': 'STOCK', 
-    #             'productTypeId': 1, 
-    #             'tradable': True, 
-    #             'category': 'B', 
-    #             'currency': 'EUR', 
-    #             'active': True, 
-    #             'exchangeId': '200', 
-    #             'onlyEodPrices': False, 
-    #             'orderTimeTypes': ['DAY', 
-    #             'GTC'], 
-    #             'buyOrderTypes': ['LIMIT', 
-    #             'MARKET', 
-    #             'STOPLOSS', 
-    #             'STOPLIMIT'], 
-    #             'sellOrderTypes': ['LIMIT', 
-    #             'MARKET', 
-    #             'STOPLOSS', 
-    #             'STOPLIMIT'], 
-    #             'productBitTypes': [], 
-    #             'closePrice': 22.94, 
-    #             'closePriceDate': '2023-02-28', 
-    #             'feedQuality': 'R', 
-    #             'orderBookDepth': 0, 
-    #             'vwdIdentifierType': 'issueid', 
-    #             'vwdId': '612908', 
-    #             'qualitySwitchable': False, 
-    #             'qualitySwitchFree': False, 
-    #             'vwdModuleId': 1
-    #         }
-    #     }
-    # }
-
+    # Send transaction to Ghostfolio
     import_activity(
-        accountId=accountId, 
-        currency=currency, 
-        dataSource=dataSource, 
-        date=date, 
-        fee=fee, 
-        quantity=quantity, 
-        symbol=symbol, 
-        type=transtype, 
-        unitPrice=unitPrice
+        accountId=config_dict.get('ghostfolio_account_id'), 
+        currency=product['currency'], 
+        dataSource="YAHOO", 
+        date=defdate,  # Format: '2023-01-16T08:17:10+01:00'
+        fee=trans['totalFeesInBaseCurrency'], 
+        quantity=trans['quantity'], 
+        symbol=tkr.ticker, 
+        type=transtype, # BUY | DIVIDEND | ITEM | SELL @FIXME implement DIVIDEND
+        unitPrice=trans['price']
     )
-
-    # {
-    #     'transfered': False, 
-    #     'quantity': 25.0, 
-    #     'id': 374907108.0, 
-    #     'grossFxRate': 0.0, 
-    #     'totalPlusFeeInBaseCurrency': -581.5, 
-    #     'price': 23.26, 
-    #     'fxRate': 0.0, 
-    #     'autoFxFeeInBaseCurrency': 0.0, 
-    #     'date': '2023-01-16T08:17:10+01:00', 
-    #     'total': -581.5, 
-    #     'nettFxRate': 0.0, 
-    #     'totalFeesInBaseCurrency': 0.0, 
-    #     'productId': 25144135.0, 
-    #     'transactionTypeId': 106.0, 
-    #     'buysell': 'B', 
-    #     'totalInBaseCurrency': -581.5, 
-    #     'totalPlusAllFeesInBaseCurrency': -581.5
-    # }
-
-    # {
-    #     'transfered': False, 
-    #     'quantity': -25.0, 
-    #     'id': 374907107.0, 
-    #     'grossFxRate': 0.0, 
-    #     'totalPlusFeeInBaseCurrency': 581.5, 
-    #     'price': 23.26, 
-    #     'fxRate': 0.0, 
-    #     'autoFxFeeInBaseCurrency': 0.0, 
-    #     'date': '2023-01-16T08:17:10+01:00', 
-    #     'total': 581.5, 
-    #     'nettFxRate': 0.0, 
-    #     'totalFeesInBaseCurrency': 0.0, 
-    #     'productId': 7218401.0, 
-    #     'transactionTypeId': 106.0, 
-    #     'buysell': 'S', 
-    #     'totalInBaseCurrency': 581.5, 
-    #     'totalPlusAllFeesInBaseCurrency': 581.5
-    # }

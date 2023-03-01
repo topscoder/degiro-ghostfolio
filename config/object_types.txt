@@ -1,0 +1,83 @@
+
+
+{
+    'data': {
+        '25144135': {
+            'id': '25144135', 
+            'name': 'FLOW TRADERS', 
+            'isin': 'BMG3602E1084', 
+            'symbol': 'FLOW', 
+            'contractSize': 1.0, 
+            'productType': 'STOCK', 
+            'productTypeId': 1, 
+            'tradable': True, 
+            'category': 'B', 
+            'currency': 'EUR', 
+            'active': True, 
+            'exchangeId': '200', 
+            'onlyEodPrices': False, 
+            'orderTimeTypes': ['DAY', 
+            'GTC'], 
+            'buyOrderTypes': ['LIMIT', 
+            'MARKET', 
+            'STOPLOSS', 
+            'STOPLIMIT'], 
+            'sellOrderTypes': ['LIMIT', 
+            'MARKET', 
+            'STOPLOSS', 
+            'STOPLIMIT'], 
+            'productBitTypes': [], 
+            'closePrice': 22.94, 
+            'closePriceDate': '2023-02-28', 
+            'feedQuality': 'R', 
+            'orderBookDepth': 0, 
+            'vwdIdentifierType': 'issueid', 
+            'vwdId': '612908', 
+            'qualitySwitchable': False, 
+            'qualitySwitchFree': False, 
+            'vwdModuleId': 1
+        }
+    }
+}
+
+
+{
+    'transfered': False, 
+    'quantity': 25.0, 
+    'id': 374907108.0, 
+    'grossFxRate': 0.0, 
+    'totalPlusFeeInBaseCurrency': -581.5, 
+    'price': 23.26, 
+    'fxRate': 0.0, 
+    'autoFxFeeInBaseCurrency': 0.0, 
+    'date': '2023-01-16T08:17:10+01:00', 
+    'total': -581.5, 
+    'nettFxRate': 0.0, 
+    'totalFeesInBaseCurrency': 0.0, 
+    'productId': 25144135.0, 
+    'transactionTypeId': 106.0, 
+    'buysell': 'B', 
+    'totalInBaseCurrency': -581.5, 
+    'totalPlusAllFeesInBaseCurrency': -581.5
+}
+
+
+{
+    'transfered': False, 
+    'quantity': -25.0, 
+    'id': 374907107.0, 
+    'grossFxRate': 0.0, 
+    'totalPlusFeeInBaseCurrency': 581.5, 
+    'price': 23.26, 
+    'fxRate': 0.0, 
+    'autoFxFeeInBaseCurrency': 0.0, 
+    'date': '2023-01-16T08:17:10+01:00', 
+    'total': 581.5, 
+    'nettFxRate': 0.0, 
+    'totalFeesInBaseCurrency': 0.0, 
+    'productId': 7218401.0, 
+    'transactionTypeId': 106.0, 
+    'buysell': 'S', 
+    'totalInBaseCurrency': 581.5, 
+    'totalPlusAllFeesInBaseCurrency': 581.5
+}
